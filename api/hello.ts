@@ -33,8 +33,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 	} else if (req.method === 'GET') {
 		const templateUrl = 'https://jbuwdk1d7uenrxyq.public.blob.vercel-storage.com/html/template-8HW0p7Tmf8iriqnEeuUMZ3RGD0vteL.html';
 		const templateResponse = await fetch(templateUrl);
-		res.status(200).send(templateResponse);
-
+		res.status(200).send(await templateResponse.text());
 	} else {
 		res.status(405).send('Method Not Allowed');
 	}
