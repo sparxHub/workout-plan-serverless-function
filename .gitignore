@@ -8,12 +8,15 @@
 # Testing
 /coverage
 
+/blob
+
 # Production
 build
 dist
 
 # Misc
 .DS_Store
+.history
 *.pem
 
 # Debug
