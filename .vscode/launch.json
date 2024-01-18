@@ -1,0 +1,18 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Vercel: debug server-side",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "vercel dev"
+    },
+    {
+      "name": "Attach to Vercel Dev",
+      "type": "chrome",
+      "request": "attach",
+      "port": 3000, // Use the port specified by Vercel Dev
+      "webRoot": "${workspaceFolder}"
+    }
+  ]
+}
