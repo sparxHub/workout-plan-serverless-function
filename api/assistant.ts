@@ -64,12 +64,37 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			// Use a saved assistant created on the playground
 			const assistant_id = process.env.OPENAI_WORKOUT_PLAN_ASSISTANT ?? "ASSISTANT_ID";
 
-			const parsedBody = JSON.parse(req.body);
+			let parsedBody = req.body;
+
+			// Check if req.body is a string, then parse it as JSON
+			if (typeof req.body === 'string') {
+				try {
+					parsedBody = JSON.parse(req.body);
+				} catch (error) {
+					console.error(error);
+					res.status(400).json({ error: 'Invalid JSON in request body' });
+					return;
+				}
+			}
 
 			// Validate parsedBody parameters
-			const requiredParams = ['age', 'skillLevel', 'timesPerWeek', 'sessionDuration', 'planFocusExerciseArray', 'healthStatus', 'EquipmentsArray', 'moreInfoText'];
+			const requiredParams = ['age', 'gender', 'skillLevel', 'timesPerWeek', 'sessionDuration', 'planFocusExerciseArray', 'healthStatus', 'EquipmentsArray', 'moreInfoText'];
 			const missingParams = requiredParams.filter((param) => !parsedBody.hasOwnProperty(param));
 
+			if (missingParams.length > 0) {
+				res.status(400).json({ error: `Missing required parameters: ${missingParams.join(', ')}` });
+				return;
+			}
+
+			if (parsedBody.planFocusExerciseArray.length === 0) {
+				res.status(400).json({ error: 'planFocusExerciseArray cannot be empty' });
+				return;
+			}
+
+			if (parsedBody.EquipmentsArray.length === 0) {
+				res.status(400).json({ error: 'EquipmentsArray cannot be empty' });
+				return;
+			}
 			if (missingParams.length > 0) {
 				throw new Error(`Missing required parameters: ${missingParams.join(', ')}`);
 			}
@@ -113,15 +138,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
 			const toolCall = await waitForRunRequiresAction(thread.id, run.id);
 
-			// Submit tool outputs with succeed
-			const submit = await openai.beta.threads.runs.submitToolOutputs(thread.id, run.id, {
-				tool_outputs: [
-					{
-						tool_call_id: toolCall.id,
-						output: "{ success: \"true\" }"
-					},
-				],
-			});
+			// TODO: Submit tool outputs with succeed
+			// const submit = await openai.beta.threads.runs.submitToolOutputs(thread.id, run.id, {
+			// 	tool_outputs: [
+			// 		{
+			// 			tool_call_id: toolCall.id,
+			// 			output: "{ success: \"true\" }"
+			// 		},
+			// 	],
+			// });
 
 			res.status(200).json(toolCall.function.arguments);
 		} catch (error) {

@@ -3,5 +3,18 @@
 		"api/assistant.ts": {
 			"maxDuration": 60
 		}
-	}
+	},
+	"routes": [
+		{
+			"src": "/api/assistant",
+			"methods": [
+				"OPTIONS",
+				"POST"
+			],
+			"dest": "/api/assistant.js",
+			"headers": {
+				"Access-Control-Allow-Origin": "http://127.0.0.1:5500"
+			}
+		}
+	]
 }
