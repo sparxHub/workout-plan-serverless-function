@@ -54,7 +54,12 @@ async function waitForRunRequiresAction(threadId, runId) {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-	if (req.method === 'POST') {
+	if (req.method === 'OPTIONS') {
+		res.setHeader('Access-Control-Allow-Origin', '*'); // Allow CORS for all origins
+		res.setHeader('Access-Control-Allow-Methods', 'POST'); // Indicate allowed methods
+		res.setHeader('Access-Control-Allow-Headers', 'Content-Type'); // Allow content type header
+		res.status(204).end(); // Respond with empty success
+	} else if (req.method === 'POST') {
 		try {
 			// Use a saved assistant created on the playground
 			const assistant_id = process.env.OPENAI_WORKOUT_PLAN_ASSISTANT ?? "ASSISTANT_ID";
@@ -79,13 +84,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
 			// Generate prompt based on client attributes
 			const prompt = `Generate a workout plan, considering the following client attributes: \n` +
-				`1/ My age: ${parsedBody.age} \n` +
-				`2/ My skill level is: ${parsedBody.skillLevel} \n` +
-				`3/ Weekly sessions info: ${parsedBody.timesPerWeek} days for ${parsedBody.sessionDuration} minutes session \n` +
-				`4/ Workout plan should focus on: ${parsedBody.planFocusExerciseArray.join(" and ")} \n` +
-				`5/ My health status: ${parsedBody.healthStatus} \n` +
-				`6/ Equipments: ${parsedBody.EquipmentsArray.join(" + ")} \n` +
-				`7/ More info: ${parsedBody.moreInfoText} \n` +
+				`1/ My age: ${parsedBody.age ?? "16"} \n` +
+				`2/ My gender: ${parsedBody.gender ?? "Male"} \n` +
+				`3/ My skill level is: ${parsedBody.skillLevel} \n` +
+				`4/ Weekly sessions info: ${parsedBody.timesPerWeek} days for ${parsedBody.sessionDuration} minutes session \n` +
+				`5/ Workout plan should focus on: ${parsedBody.planFocusExerciseArray.join(" and ")} \n` +
+				`6/ My health status: ${parsedBody.healthStatus} \n` +
+				`7/ Equipments: ${parsedBody.EquipmentsArray.join(" + ")} \n` +
+				`8/ More info: ${parsedBody.moreInfoText} \n` +
 				`;`;
 
 			const thread = await openai.beta.threads.create({
@@ -117,12 +123,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				],
 			});
 
-			res.setHeader('Content-Type', 'application/json').status(200).send(toolCall.function.arguments);
+			res.status(200).json(toolCall.function.arguments);
 		} catch (error) {
 			console.error(error);
 			res.status(500).send(`Error processing request. ${error}`);
 		}
 	} else {
-		// Handle GET or other methods as before
+		res.status(405).json({ error: 'Method Not Supported' });
 	}
 }
