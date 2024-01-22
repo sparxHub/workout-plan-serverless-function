@@ -127,6 +127,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 					}
 				]
 			});
+			console.log('Sending prompt:')
+			console.log(prompt)
 
 			const run = await openai.beta.threads.runs.create(
 				thread.id,
@@ -137,6 +139,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
 
 			const toolCall = await waitForRunRequiresAction(thread.id, run.id);
+			console.log('Tool call function arguments:')
+			console.log(toolCall.function.arguments)
+
 
 			// TODO: Submit tool outputs with succeed
 			// const submit = await openai.beta.threads.runs.submitToolOutputs(thread.id, run.id, {
