@@ -149,14 +149,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
 
 			// TODO: Submit tool outputs with succeed
-			// const submit = await openai.beta.threads.runs.submitToolOutputs(thread.id, run.id, {
-			// 	tool_outputs: [
-			// 		{
-			// 			tool_call_id: toolCall.id,
-			// 			output: "{ success: \"true\" }"
-			// 		},
-			// 	],
-			// });
+			const submit = await openai.beta.threads.runs.submitToolOutputs(thread.id, run.id, {
+				tool_outputs: [
+					{
+						tool_call_id: toolCall.id,
+						output: "{ success: \"true\" }"
+					},
+				],
+			});
 
 			res.status(200).json(toolCall.function.arguments);
 		} catch (error) {
