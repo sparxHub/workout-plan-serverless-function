@@ -27,16 +27,19 @@ async function waitForRunRequiresAction(threadId, runId) {
 	}
 
 	if (runStatus === 'completed') {
-		console.error('runStatus status: completed but expected to be requires_action', runDetails);
+		console.error('Run failed details:', JSON.stringify(runDetails));
+		console.error('runStatus status: completed but expected to be requires_action');
 	} else if (runStatus === 'requires_action') {
 		// Check for required_action.submit_tool_outputs
 		if (!runDetails.required_action || runDetails.required_action.type !== 'submit_tool_outputs') {
+			console.error('Run failed details:', JSON.stringify(runDetails));
 			throw new Error('Run requires action, but no submit_tool_outputs found');
 		}
 
 		// Check for tool_calls[0] with type 'function'
 		const toolCalls = runDetails.required_action.submit_tool_outputs.tool_calls;
 		if (!toolCalls || toolCalls.length === 0 || toolCalls[0].type !== 'function') {
+			console.error('Run failed details:', JSON.stringify(runDetails));
 			throw new Error('Run requires action, but no function tool call found');
 		}
 
@@ -47,8 +50,10 @@ async function waitForRunRequiresAction(threadId, runId) {
 		runStatus === 'cancelling' ||
 		runStatus === 'expired'
 	) {
+		console.error('Run failed details:', JSON.stringify(runDetails));
 		throw new Error(`Run failed with status: ${runStatus}`); // Raise error with status
 	} else {
+		console.error('Run failed details:', JSON.stringify(runDetails));
 		throw new Error(`Unexpected run status: ${runStatus}`);
 	}
 }
