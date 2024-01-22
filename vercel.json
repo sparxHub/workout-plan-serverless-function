@@ -1,7 +1,7 @@
 {
 	"functions": {
 		"api/assistant.ts": {
-			"maxDuration": 60
+			"maxDuration": 90
 		}
 	},
 	"routes": [

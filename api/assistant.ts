@@ -17,7 +17,7 @@ async function waitForRunRequiresAction(threadId, runId) {
 			runDetails = await openai.beta.threads.runs.retrieve(threadId, runId);
 			runStatus = runDetails.status;
 
-			// console.log('runDetails:', JSON.stringify(runDetails));
+			console.log("in progress ... ");
 
 			await new Promise((resolve) => setTimeout(resolve, 5000)); // Adjust interval as needed
 		} catch (error) {
