@@ -30,7 +30,7 @@ async function waitForRunRequiresAction(threadId, runId) {
 		console.error('Run failed details:', JSON.stringify(runDetails));
 		console.error('runStatus status: completed but expected to be requires_action');
 	} else if (runStatus === 'requires_action') {
-		// Check for required_action.submit_tool_outputs
+
 		if (!runDetails.required_action || runDetails.required_action.type !== 'submit_tool_outputs') {
 			console.error('Run failed details:', JSON.stringify(runDetails));
 			throw new Error('Run requires action, but no submit_tool_outputs found');
@@ -43,7 +43,9 @@ async function waitForRunRequiresAction(threadId, runId) {
 			throw new Error('Run requires action, but no function tool call found');
 		}
 
-		return toolCalls[0];
+		// Filter and return tool calls of type 'function':
+		const functionToolCalls = toolCalls.filter(toolCall => toolCall.type === 'function');
+		return functionToolCalls; // Returns an array of function tool calls
 	} else if (
 		runStatus === 'failed' ||
 		runStatus === 'cancelled' ||
@@ -143,22 +145,33 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			);
 
 
-			const toolCall = await waitForRunRequiresAction(thread.id, run.id);
-			console.log('Tool call function arguments:')
-			console.log(toolCall.function.arguments)
+			const toolCalls = await waitForRunRequiresAction(thread.id, run.id);
+
+			// Get the last tool call and its arguments:
+			const lastToolCall = toolCalls[toolCalls.length - 1];
+			const toolCallArguments = lastToolCall.function.arguments;
+
+			console.log('Tool call function arguments (last item):');
+			console.log(toolCallArguments);
 
 
-			// TODO: Submit tool outputs with succeed
+			// Create an array to hold tool outputs:
+			const toolOutputs: { tool_call_id: string; output: string; }[] = [];
+
+			// Iterate through tool calls and create output objects:
+			for (const toolCall of toolCalls) {
+				toolOutputs.push({
+					tool_call_id: toolCall.id,
+					output: "{ success: \"true\" }"
+				});
+			}
+
+			// Submit all tool outputs:
 			const submit = await openai.beta.threads.runs.submitToolOutputs(thread.id, run.id, {
-				tool_outputs: [
-					{
-						tool_call_id: toolCall.id,
-						output: "{ success: \"true\" }"
-					},
-				],
+				tool_outputs: toolOutputs
 			});
 
-			res.status(200).json(toolCall.function.arguments);
+			res.status(200).json(toolCallArguments);
 		} catch (error) {
 			console.error(error);
 			res.status(500).send(`Error processing request. ${error}`);
