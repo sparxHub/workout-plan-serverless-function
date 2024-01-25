@@ -125,6 +125,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				`7/ Equipments: ${parsedBody.EquipmentsArray.join(" + ")} \n` +
 				`8/ More info: ${parsedBody.moreInfoText} \n` +
 				`;`;
+			console.log('prompt: ' + prompt);
 
 			const thread = await openai.beta.threads.create({
 				messages: [
