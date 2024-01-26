@@ -19,7 +19,7 @@ async function waitForRunRequiresAction(threadId, runId) {
 
 			console.log("in progress ... ");
 
-			await new Promise((resolve) => setTimeout(resolve, 5000)); // Adjust interval as needed
+			await new Promise((resolve) => setTimeout(resolve, 10000)); // Adjust interval as needed
 		} catch (error) {
 			console.error('Error checking run status:', error);
 			throw new Error(`Error on waitForRunRequiresAction. error: ${error}`); // Raise error with status
@@ -125,7 +125,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				`7/ Equipments: ${parsedBody.EquipmentsArray.join(" + ")} \n` +
 				`8/ More info: ${parsedBody.moreInfoText} \n` +
 				`;`;
-			console.log('prompt: ' + prompt);
 
 			const thread = await openai.beta.threads.create({
 				messages: [
@@ -135,13 +134,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 					}
 				]
 			});
-			console.log('Sending prompt:')
+			console.log('# Sending prompt:')
 			console.log(prompt)
 
 			const run = await openai.beta.threads.runs.create(
 				thread.id,
 				{
-					assistant_id: assistant_id,
+					assistant_id: assistant_id
 				}
 			);
 
@@ -152,7 +151,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			const lastToolCall = toolCalls[toolCalls.length - 1];
 			const toolCallArguments = lastToolCall.function.arguments;
 
-			console.log('Tool call function arguments (last item):');
+			console.log('# Tool call function arguments (last item):');
 			console.log(toolCallArguments);
 
 
