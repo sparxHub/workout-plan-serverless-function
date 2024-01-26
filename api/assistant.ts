@@ -148,12 +148,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			const toolCalls = await waitForRunRequiresAction(thread.id, run.id);
 
 			// Get the last tool call and its arguments:
-			const lastToolCall = toolCalls[toolCalls.length - 1];
-			const toolCallArguments = lastToolCall.function.arguments;
+			const firstToolCall = toolCalls[0];
+			const toolCallArguments = firstToolCall.function.arguments;
 
-			console.log('# Tool call function arguments (last item):');
-			console.log(toolCallArguments);
+			// for (let i = 0; i < toolCalls.length;i++) 
+			{
+				const i = 0;
+				const toolCall = toolCalls[i];
+				const toolCallArguments = toolCall.function.arguments;
 
+				console.log(`# Tool call function arguments (item ${i + 1}):`);
+				console.log(toolCallArguments);
+			}
 
 			// Create an array to hold tool outputs:
 			const toolOutputs: { tool_call_id: string; output: string; }[] = [];
