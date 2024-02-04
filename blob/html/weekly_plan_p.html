@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Online Workout Planner - Create Your Free Workout Plan</title>
+	<meta name="description"
+		content="Energize your fitness journey with our online workout planner. Create a personalized workout plan for free in just 2 minutes. Get started now!">
+
+	<script src="https://cdn.tailwindcss.com"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.0.4/pako.min.js"></script>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+	<link href="https://fonts.googleapis.com/css?family=Poppins:400,600,700&display=swap" rel="stylesheet">
+	<style>
+		body {
+			font-family: 'Poppins', sans-serif;
+			color: #210437;
+		}
+
+		.form-input,
+		.form-select,
+		.form-checkbox {
+			background-color: #e9daf9;
+			color: #34495e;
+		}
+
+		button:disabled {
+			background-color: #ccc;
+			/* Gray background */
+			color: #666;
+			/* Gray text color */
+			cursor: not-allowed;
+			/* Change cursor to not-allowed */
+		}
+
+		.table-bordered {
+			border: 1px solid #000;
+		}
+
+		.table-bordered td,
+		.table-bordered th {
+			border: 1px solid #000;
+		}
+
+		.close-button {
+			position: absolute;
+			top: 5px;
+			right: 5px;
+			cursor: pointer;
+		}
+
+		.list-disc {
+			list-style-type: none !important;
+		}
+
+		.bullet-list {
+			list-style: none;
+			padding-left: 0;
+		}
+
+		.bullet-list li {
+			position: relative;
+			margin-bottom: 10px;
+			padding-left: 30px;
+		}
+
+		.bullet-list li::before {
+			content: "\2022";
+			/* Unicode bullet character */
+			position: absolute;
+			left: 0;
+			top: 50%;
+			transform: translateY(-50%);
+		}
+
+		/* Preparing Progress */
+		#progress-bar {
+			height: 20px;
+			background-color: #4A90E2;
+			border-radius: 4px;
+			/* Rounded corners */
+		}
+
+		/* Add style for the loading message */
+		.loading-message {
+			font-weight: bold;
+			margin-top: 10px;
+		}
+
+		/* Center loading container in the middle of the page */
+		#loading-container {
+			display: none;
+			position: fixed;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			text-align: center;
+			background-color: rgba(255, 255, 255, 0.9);
+			padding: 20px;
+			border-radius: 10px;
+			box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+		}
+	</style>
+</head>
+
+<body class="text-purple-900 text-md">
+	<div class="min-h-screen bg-gray-100 p-0 sm:p-10">
+		<div class="max-w-3xl mx-auto bg-white p-0 sm:p-6">
+			<div id="form_stage" style="display: block;">
+
+
+				<img
+					src="https://jbuwdk1d7uenrxyq.public.blob.vercel-storage.com/html/images/workoutplan_hero_picture_app-vhrchksEJMmuYIvwpppCKCR0LMWAr9.webp"
+					alt="Workout Plan" width="800" height="600">
+
+				<h1 class="text-xl md:text-3xl font-bold text-left mt-4">Your AI-Powered Workout Plan
+					for <span class="text-purple-600 font-bold text-2xl md:text-3xl">Fitness</span>
+				</h1>
+
+
+				<p class="text-md text-left m-4">We're thrilled to introduce our brand-new, <span class="font-bold text-lg">free
+						exercise
+						planner</span> – your
+					ticket to a customized workout plan in just 2 minutes flat.</p>
+				<p class="text-left m-4">The best part? <span class="font-bold text-lg">It won't cost you a dime!</span> Our
+					cutting-edge tool harnesses the power of AI to handpick exercises from our expertly curated list, endorsed by
+					top fitness
+					trainers.</p>
+				<div class="m-4 bg-yellow-50 p-4 rounded-sm">
+					Here's how to get started:
+					<ul class="bullet-list mt-4">
+						<li>Fill in your details in the form below. &#128071;</li>
+						<li>If you want a specific workout routine, like PPL (Push-Pull-Legs), mention it in the 'More Info'
+							section.</li>
+						<li>Click <span class="font-bold">'Get Your Weekly Planner'</span> button, and in just 2 minutes, your
+							personalized
+							workout plan will be ready.</li>
+					</ul>
+				</div>
+				<p class="text-left m-4">Our tool is optimized for popular split routines such as Upper/Lower, Push/Pull, and
+					Push/Pull/Legs. These routines efficiently target specific muscle groups for better results. Whether you're a
+					beginner
+					or a pro, we've got the perfect plan to help you achieve your fitness goals. By default, we start with a
+					full-body
+					routine to kickstart your fitness journey. So, what are you waiting for?</p>
+
+
+				<p class="text-left m-4 font-bold text-xl">Let's get moving!</p>
+
+				<div class="form-section bg-purple-50 rounded-lg p-4 sm:p-6">
+					<form class="space-y-6 mt-6" id="workout-form">
+						<div class="grid grid-cols-2 gap-6">
+							<!-- Age and Gender -->
+							<input type="number" min="16" name="age" placeholder="Your Age (+16)" class="form-input rounded-md p-2"
+								required>
+							<div>
+								<label class="inline-flex items-center">
+									<input type="radio" class="form-radio" name="gender" value="Male" checked>
+									<i class="fas fa-male text-lg ml-2"></i>
+								</label>
+								<label class="inline-flex items-center ml-6">
+									<input type="radio" class="form-radio" name="gender" value="Female">
+									<i class="fas fa-female text-lg ml-2"></i>
+								</label>
+							</div>
+						</div>
+						<!-- Error message for Age -->
+						<div id="age-error" class="text-red-600"></div>
+						<!-- Fitness Level -->
+						<select class="form-select rounded-md p-2 w-full" name="fitness_level" required>
+							<option value="" selected disabled>Fitness Level</option>
+							<option value="beginner">Beginner</option>
+							<option value="intermediate">Intermediate</option>
+							<option value="advanced">Advanced</option>
+						</select>
+						<!-- Fitness Goal -->
+						<div>
+							<p class="mb-4">Fitness Goal (select at least one):</p>
+							<div class="grid grid-cols-2 md:grid-cols-3 gap-4" id="fitness-goals">
+								<label class="inline-flex items-center">
+									<input type="checkbox" class="form-checkbox text-purple-500 h-5 w-5" name="fitness_goal"
+										value="weight_loss">
+									<span class="ml-2 text-gray-700">Weight Loss</span>
+								</label>
+								<label class="inline-flex items-center">
+									<input type="checkbox" class="form-checkbox text-purple-500 h-5 w-5" name="fitness_goal"
+										value="strength">
+									<span class="ml-2 text-gray-700">Strength</span>
+								</label>
+								<label class="inline-flex items-center">
+									<input type="checkbox" class="form-checkbox text-purple-500 h-5 w-5" name="fitness_goal"
+										value="muscle_building">
+									<span class="ml-2 text-gray-700">Muscle Building</span>
+								</label>
+								<label class="inline-flex items-center">
+									<input type="checkbox" class="form-checkbox text-purple-500 h-5 w-5" name="fitness_goal"
+										value="toning">
+									<span class="ml-2 text-gray-700">Toning</span>
+								</label>
+								<label class="inline-flex items-center">
+									<input type="checkbox" class="form-checkbox text-purple-500 h-5 w-5" name="fitness_goal"
+										value="endurance">
+									<span class="ml-2 text-gray-700">Endurance</span>
+								</label>
+							</div>
+						</div>
+						<div id="fitness-goals-error" class="text-red-600"></div>
+						<!-- Time Availability -->
+						<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+							<input type="number" name="days_per_week" min="1" max="7" placeholder="Max days per week (1-7)"
+								class="form-input rounded-md p-2" required>
+							<input type="number" name="session_time" min="30" max="90" step="5"
+								placeholder="Max session time (30-90 min)" class="form-input rounded-md p-2" required>
+						</div>
+						<!-- Health and Injuries -->
+						<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+							<label class="inline-flex items-center">
+								<input type="radio" class="form-radio" name="health" value="no injuries" checked>
+								<span class="ml-2">No Injuries</span>
+							</label>
+							<div class="grid grid-cols-3 gap-4">
+								<label class="inline-flex items-center col-span-1">
+									<input type="radio" class="form-radio" name="health" value="other">
+									<span class="ml-2">Other</span>
+								</label>
+								<input type="text" name="injury_specification" maxlength="50" placeholder="Specify injury"
+									class="form-input rounded-md p-2 ml-4 col-span-2" disabled>
+							</div>
+						</div>
+
+						<div>
+							<p class="mb-4">Equipment Access (select at least one):</p>
+							<div class="grid grid-cols-2 md:grid-cols-3 gap-4" id="equipment-access">
+								<label class="inline-flex items-center">
+									<input type="checkbox" class="form-checkbox text-purple-500 h-5 w-5" name="equipment_access"
+										value="body_weight" checked>
+									<span class="ml-2 text-gray-700">Body Weight</span>
+								</label>
+								<label class="inline-flex items-center">
+									<input type="checkbox" class="form-checkbox text-purple-500 h-5 w-5" name="equipment_access"
+										value="kettlebells">
+									<span class="ml-2 text-gray-700">Kettlebells</span>
+								</label>
+								<label class="inline-flex items-center">
+									<input type="checkbox" class="form-checkbox text-purple-500 h-5 w-5" name="equipment_access"
+										value="dumbells">
+									<span class="ml-2 text-gray-700">Dumbbells</span>
+								</label>
+								<label class="inline-flex items-center">
+									<input type="checkbox" class="form-checkbox text-purple-500 h-5 w-5" name="equipment_access"
+										value="medicine_ball">
+									<span class="ml-2 text-gray-700">Medicine ball</span>
+								</label>
+								<label class="inline-flex items-center">
+									<input type="checkbox" class="form-checkbox text-purple-500 h-5 w-5" name="equipment_access"
+										value="resistance_bands">
+									<span class="ml-2 text-gray-700">Res. Bands</span>
+								</label>
+								<label class="inline-flex items-center">
+									<input type="checkbox" class="form-checkbox text-purple-500 h-5 w-5" name="equipment_access"
+										value="box">
+									<span class="ml-2 text-gray-700">Box</span>
+								</label>
+							</div>
+
+						</div>
+						<!-- Error message for Equipment Access -->
+						<div id="fitness-equipment-access-error" class="text-red-600"></div>
+						<!-- Additional Info -->
+						<div>
+							<p class="mb-4">Please feel free to add more info:</p>
+							<textarea name="additional_info" placeholder="Please focus on the lower body and back this month"
+								class="form-input rounded-md p-2 w-full" rows="4"></textarea>
+						</div>
+						<!-- Submit Button with loading gauge -->
+						<button type="submit" class="w-full bg-purple-800 text-white px-4 py-2 rounded-md relative"
+							id="submit-button">
+							<span id="submit-button-text">Get Your Weekly Planner</span>
+						</button>
+
+						<!-- Preapring progress -->
+						<div id="loading-container" class="hidden">
+							<div class="progress-container">
+								<div class="progress-bar" id="progress-bar"></div>
+							</div>
+							<p class="loading-message">Our AI is preparing your workout, it might take 1-2 minutes</p>
+						</div>
+
+					</form>
+				</div>
+			</div>
+
+			<div id="result_stage" style="display: none;">
+				<!-- Toolbar buttons -->
+				<div class="flex justify-between mb-6">
+					<div class="space-x-2">
+						<span>MONTH:</span>
+						<input type="text" class="border-b-2 border-black w-8">
+						<span>YEAR:</span>
+						<input type="text" class="border-b-2 border-black w-12">
+					</div>
+
+					<div class="flex justify-end mb-4">
+						<button id="clean-button"
+							class="bg-transparent border border-purple-500 text-purple-500 hover:bg-purple-500 hover:text-white py-2 px-4 rounded outline-none mr-2">
+							Clean
+						</button>
+						<button id="print-button"
+							class="bg-transparent border border-purple-500 text-purple-500 hover:bg-purple-500 hover:text-white py-2 px-4 rounded outline-none mr-2">
+							Print
+						</button>
+						<!-- <button id="share-button"
+							class="bg-transparent border border-purple-500 text-purple-500 hover:bg-purple-500 hover:text-white py-2 px-4 rounded outline-none">
+							Share
+						</button> -->
+					</div>
+				</div>
+				<div class="flex justify-between mb-6">
+					<h1 class="text-3xl font-bold">ULTIMATE WORKOUT PLANNER</h1>
+				</div>
+
+				<div id="workout_plan_title" class="bg-gray-300 p-2 text-lg font-semibold mb-6">Workout Plan (3 Days a Week)
+				</div>
+
+				<!-- Dynamic workout plan goes here -->
+				<div id="workout_plan"></div>
+
+				<!-- Static sections-->
+
+				<div class="bg-gray-300 p-2 text-lg font-semibold mb-6">Weekly Schedule</div>
+				<table class="table-bordered w-full text-center mb-6" style="table-layout: fixed;">
+					<colgroup>
+						<col style="width: 14.28%;">
+						<col style="width: 14.28%;">
+						<col style="width: 14.28%;">
+						<col style="width: 14.28%;">
+						<col style="width: 14.28%;">
+						<col style="width: 14.28%;">
+						<col style="width: 14.28%;">
+					</colgroup>
+					<tr>
+						<th>Mon</th>
+						<th>Tue</th>
+						<th>Wed</th>
+						<th>Thu</th>
+						<th>Fri</th>
+						<th>Sat</th>
+						<th>Sun</th>
+					</tr>
+					<!-- Rows repeated for each time slot -->
+					<tr>
+						<td class="h-16"></td>
+						<td class="h-16"></td>
+						<td class="h-16"></td>
+						<td class="h-16"></td>
+						<td class="h-16"></td>
+						<td class="h-16"></td>
+						<td class="h-16"></td>
+					</tr>
+					<!-- Placeholder for time slots -->
+				</table>
+
+				<div class="bg-gray-300 p-2 text-lg font-semibold mb-6">Monthly Progress Tracker</div>
+				<table class="table-bordered w-full text-center">
+					<tr>
+						<th>Month</th>
+						<th>Weight (lbs/kg)</th>
+						<th>Body Fat (%)</th>
+						<th>Measurements (Chest, Waist, Hips, etc.)</th>
+					</tr>
+					<!-- Rows repeated for each month -->
+					<!-- Rows repeated for each time slot -->
+					<tr>
+						<td class="h-16"></td>
+						<td class="h-16"></td>
+						<td class="h-16"></td>
+						<td class="h-16"></td>
+					</tr>
+					<!-- Placeholder for time slots -->
+
+				</table>
+			</div>
+
+		</div>
+	</div>
+
+	<script>const _0x256b16=_0x28c9;(function(_0xb66da3,_0x2fa8ee){const _0x24ecee=_0x28c9,_0x1560b0=_0xb66da3();while(!![]){try{const _0x1a5df9=-parseInt(_0x24ecee(0x184))/0x1+-parseInt(_0x24ecee(0x186))/0x2*(-parseInt(_0x24ecee(0x1ad))/0x3)+-parseInt(_0x24ecee(0x1bb))/0x4+-parseInt(_0x24ecee(0x1c3))/0x5*(parseInt(_0x24ecee(0x177))/0x6)+parseInt(_0x24ecee(0x1b0))/0x7*(parseInt(_0x24ecee(0x16e))/0x8)+parseInt(_0x24ecee(0x1d5))/0x9*(parseInt(_0x24ecee(0x19c))/0xa)+parseInt(_0x24ecee(0x1d3))/0xb*(parseInt(_0x24ecee(0x1c8))/0xc);if(_0x1a5df9===_0x2fa8ee)break;else _0x1560b0['push'](_0x1560b0['shift']());}catch(_0x4dd319){_0x1560b0['push'](_0x1560b0['shift']());}}}(_0x5e65,0xdba03));let timerInterval;function deepCopy(_0x45ac62){const _0x25a493=_0x28c9;if(typeof _0x45ac62!==_0x25a493(0x190)||_0x45ac62===null)return _0x45ac62;if(Array[_0x25a493(0x187)](_0x45ac62)){const _0x2c542d=[];for(let _0x5ca849=0x0;_0x5ca849<_0x45ac62[_0x25a493(0x195)];_0x5ca849++){_0x2c542d[_0x5ca849]=deepCopy(_0x45ac62[_0x5ca849]);}return _0x2c542d;}const _0x254a90={};for(const _0x598934 in _0x45ac62){Object[_0x25a493(0x1db)][_0x25a493(0x16c)](_0x45ac62,_0x598934)&&(_0x254a90[_0x598934]=deepCopy(_0x45ac62[_0x598934]));}return _0x254a90;}function isDataOlderThanOneMonth(_0x1d683f){const _0x2361c0=_0x28c9;if(!_0x1d683f)return!![];const _0x5bef8b=0x1e*0x18*0x3c*0x3c*0x3e8,_0x36d89f=Date[_0x2361c0(0x176)](),_0x4514e7=_0x36d89f-_0x1d683f;return _0x4514e7>_0x5bef8b;}function generateExerciseInfoBox(_0x45333a){const _0x4b169f=_0x28c9;let _0x4cc2e5='\x0a\x20\x20\x20\x20<div\x20class=\x22exercise-container\x20bg-purple-50\x20p-2\x20mx-auto\x20hidden\x22>\x0a\x20\x20\x20\x20\x20\x20<p\x20class=\x22\x20mb-2\x22>'+_0x45333a[_0x4b169f(0x191)][_0x4b169f(0x15a)]+_0x4b169f(0x1bd);return _0x45333a[_0x4b169f(0x191)][_0x4b169f(0x174)]&&(_0x4cc2e5+=_0x4b169f(0x1a5),_0x45333a[_0x4b169f(0x191)][_0x4b169f(0x174)][_0x4b169f(0x1c5)]((_0x2605ae,_0x5e6b2c)=>{const _0x9269e9=_0x4b169f;_0x2605ae['link']&&(_0x4cc2e5+=_0x9269e9(0x1cc)+_0x2605ae[_0x9269e9(0x189)]+_0x9269e9(0x198)+(_0x2605ae[_0x9269e9(0x1ba)]||_0x9269e9(0x1b4)+(_0x5e6b2c+0x1))+'</a><br>');}),_0x4cc2e5+='</div>',_0x4cc2e5+=_0x4b169f(0x169),_0x45333a['more_info']['more_refs'][_0x4b169f(0x1c5)]((_0x3d3221,_0x27932c)=>{const _0x7a85ac=_0x4b169f;_0x3d3221[_0x7a85ac(0x1bc)]&&(_0x4cc2e5+=_0x7a85ac(0x156)+_0x3d3221[_0x7a85ac(0x1bc)]+_0x7a85ac(0x1be)+(_0x27932c+0x1)+'\x22\x20class=\x22border-2\x20bg-white\x20border-gray-300\x20rounded-md\x20mb-4\x20mr-4\x22>');}),_0x4cc2e5+=_0x4b169f(0x1dc)),_0x4cc2e5+=_0x4b169f(0x1d7)+_0x45333a['more_info'][_0x4b169f(0x15c)]+_0x4b169f(0x1bd),_0x4cc2e5+='</div>',_0x4cc2e5;}function toggleExerciseInfoBox(_0x194c09){const _0x11087e=_0x28c9,_0x265a4b=_0x194c09[_0x11087e(0x157)];_0x265a4b['classList']['toggle'](_0x11087e(0x167));}function generateWeeklyWorkoutPlan(_0x1edc75){let _0x59ccc4='';return _0x1edc75['forEach'](_0x316ee4=>{const _0x576bba=_0x28c9;_0x59ccc4+=_0x576bba(0x168),_0x59ccc4+=_0x576bba(0x1c7)+_0x316ee4[_0x576bba(0x188)]+_0x576bba(0x1cb),_0x59ccc4+=_0x576bba(0x196);let _0xf9bb0e=0x1;_0x316ee4[_0x576bba(0x194)]['forEach'](_0x5a8e28=>{const _0xd6d7b6=_0x576bba;_0x59ccc4+='<div\x20class=\x22text-purple-800\x20font-bold\x20mb-3\x20mt-3\x22>'+_0x5a8e28[_0xd6d7b6(0x1ba)]+'\x20('+_0x5a8e28[_0xd6d7b6(0x1d2)]+_0xd6d7b6(0x1cf),_0x59ccc4+=_0xd6d7b6(0x161),_0x5a8e28[_0xd6d7b6(0x1a8)][_0xd6d7b6(0x1c5)](_0x5bcab2=>{const _0x3b30c5=_0xd6d7b6;_0x59ccc4+=_0x3b30c5(0x1a2)+_0xf9bb0e+_0x3b30c5(0x1ab)+_0x5bcab2[_0x3b30c5(0x175)]+_0x3b30c5(0x1a6)+_0x5bcab2[_0x3b30c5(0x163)]+_0x3b30c5(0x17f),_0x5bcab2['more_info']&&(_0x59ccc4+=_0x3b30c5(0x173),_0x59ccc4+=generateExerciseInfoBox(_0x5bcab2)),_0x59ccc4+='</li>',_0xf9bb0e++;}),_0x59ccc4+=_0xd6d7b6(0x1da);}),_0x59ccc4+=_0x576bba(0x192);}),_0x59ccc4;}function getWeeklyWorkingPlanFromLocalStorage(){const _0x1e8d97=_0x28c9,_0x418da1=JSON[_0x1e8d97(0x1a0)](localStorage[_0x1e8d97(0x1df)](_0x1e8d97(0x1b3))),_0x827dcd=localStorage[_0x1e8d97(0x1df)]('workoutResultTimestamp');if(_0x418da1&&_0x418da1[_0x1e8d97(0x1a3)]&&_0x418da1[_0x1e8d97(0x1a3)][_0x1e8d97(0x195)]>0x0&&_0x827dcd&&!isDataOlderThanOneMonth(Number(_0x827dcd))){const _0x2f85a0=document[_0x1e8d97(0x18d)](_0x1e8d97(0x17a));_0x2f85a0['innerHTML']=generateWeeklyWorkoutPlan(_0x418da1[_0x1e8d97(0x1a3)]),document[_0x1e8d97(0x1c2)](_0x1e8d97(0x155))[_0x1e8d97(0x18b)](_0x2f85a0);const _0x33acbb=document[_0x1e8d97(0x1c2)](_0x1e8d97(0x179)),_0x292766=_0x418da1[_0x1e8d97(0x1a3)]['length'];_0x33acbb[_0x1e8d97(0x1ce)]='Workout\x20Plan\x20('+_0x292766+_0x1e8d97(0x170),toggleStages(_0x1e8d97(0x158));}else console[_0x1e8d97(0x18c)](_0x1e8d97(0x1b1));}function _0x28c9(_0x3dee4f,_0x420879){const _0x5e655e=_0x5e65();return _0x28c9=function(_0x28c92e,_0x13e716){_0x28c92e=_0x28c92e-0x155;let _0x5e1f4a=_0x5e655e[_0x28c92e];return _0x5e1f4a;},_0x28c9(_0x3dee4f,_0x420879);}function toggleStages(_0x4e6e9b=null){const _0x6b7957=_0x28c9,_0x33241d=document['getElementById'](_0x6b7957(0x15e)),_0x2864fc=document[_0x6b7957(0x1c2)](_0x6b7957(0x1b2));if(_0x4e6e9b===_0x6b7957(0x18f))_0x33241d[_0x6b7957(0x15f)]['display']=_0x6b7957(0x1d1),_0x2864fc['style'][_0x6b7957(0x197)]=_0x6b7957(0x1a7);else{if(_0x4e6e9b===_0x6b7957(0x158))_0x33241d[_0x6b7957(0x15f)]['display']=_0x6b7957(0x1a7),_0x2864fc[_0x6b7957(0x15f)]['display']=_0x6b7957(0x1d1);else _0x4e6e9b===null&&(_0x33241d['style'][_0x6b7957(0x197)]===_0x6b7957(0x1a7)?(_0x33241d[_0x6b7957(0x15f)][_0x6b7957(0x197)]=_0x6b7957(0x1d1),_0x2864fc['style'][_0x6b7957(0x197)]='none'):(_0x33241d[_0x6b7957(0x15f)][_0x6b7957(0x197)]=_0x6b7957(0x1a7),_0x2864fc['style'][_0x6b7957(0x197)]=_0x6b7957(0x1d1)));}}function resetSubmitButton(){const _0x259753=_0x28c9,_0xadd1cc=document['getElementById'](_0x259753(0x1c4)),_0x3e5e84=document[_0x259753(0x1c2)](_0x259753(0x182));_0xadd1cc[_0x259753(0x15b)]=![],_0x3e5e84['textContent']=_0x259753(0x19f);}function _0x5e65(){const _0x13ad68=['addEventListener','submit','</ul>','hasOwnProperty','</div>','opacity','json','getItem','workout_plan','<img\x20src=\x22','nextElementSibling','resultStage','result','description','disabled','tips_text','API\x20call\x20failed:','form_stage','style','Failed\x20to\x20fetch\x20exercise\x20info:','<ul\x20class=\x22list-disc\x20ml-0\x20sm:ml-8\x22>','then','setReps','injury_specification','setItem','from','hidden','<div\x20class=\x22mb-6\x22>','<div\x20class=\x22flex\x20justify-between\x20items-center\x20mb-1\x20mt-8\x22>','POST','Please\x20select\x20at\x20least\x20one\x20option\x20in\x20Fitness\x20Goal.','call','get','128OOQVQD','.loading-message','\x20Days\x20a\x20Week)','removeAttribute','fitness-equipment-access-error','<span\x20class=\x22text-blue-500\x22\x20onclick=\x22toggleExerciseInfoBox(this)\x22\x20style=\x22cursor:\x20pointer;\x22>\x20\x20[more\x20info]</span>','more_refs','name','now','742188voSPHg','has','workout_plan_title','div','string','input[type=\x22checkbox\x22]','equipment-access','#print-button','</i>','other','random','submit-button-text','workoutResultTimestamp','1143378OJgRSY','ungzip','204cHZCef','isArray','day','link','health','appendChild','log','createElement','querySelector','formStage','object','more_info','</div></div>','progress-bar','sections','length','<div\x20class=\x22ml-4\x22>','display','\x22\x20class=\x22text-blue-500\x20hover:underline\x22\x20target=\x22_blank\x22>','fitness_level','fitness-goals-error','width','1052260JjZRbx','value','error','Get\x20Your\x20Weekly\x20Planner','parse','Workout\x20data\x20cleaned\x20from\x20local\x20storage.','<li\x20\x20class=\x22pl-0\x20mb-2\x22><div\x20class=\x22font-bold\x20text-xs\x20text-purple-600\x22>Exercise\x20#','weekly_plan_data','checked','<div\x20class=\x22bg-yellow-50\x20p-4\x20border-l-4\x20border-yellow-600\x22>\x0a\x09\x09\x09\x09\x09\x09\x09\x09\x09<p\x20class=\x22font-semibold\x22>External\x20links:</p>','</span>\x20<i>','none','exercises','additional_info','DOMContentLoaded','</div><span\x20class=\x22font-bold\x22>','change','20598IexFXS','some','gender','389865LTkYQw','No\x20workout\x20data\x20available\x20in\x20local\x20storage.','result_stage','workoutResult','Link\x20','An\x20error\x20occurred\x20while\x20fetching\x20data\x20from\x20the\x20API.','setAttribute','location','click','catch','title','3807432SMhykL','image','</p>','\x22\x20alt=\x22Image\x20','fitness_goal','loading-container','removeItem','getElementById','45JgXbRC','submit-button','forEach','find','<h2\x20class=\x22font-bold\x20mb-3\x20bg-purple-200\x20py-2\x20px-4\x20rounded-lg\x22>','1788REXmkO','#clean-button','https://jbuwdk1d7uenrxyq.public.blob.vercel-storage.com/html/workout_excersice_full_data-9iz0PvcPDWRc5oX0YJ96lqWxrf6Xrm.json','</h2>','<a\x20href=\x22','querySelectorAll','textContent','):</div>','stringify','block','time_text','139183Tpmwik','input[name=\x22injury_specification\x22]','54HdgVww','toString','<p\x20class=\x22text-gray-700\x20mb-4\x22><i\x20class=\x22fas\x20fa-lightbulb\x20text-yellow-500\x22></i>\x20Tip:\x20'];_0x5e65=function(){return _0x13ad68;};return _0x5e65();}function fetchExerciseInfoData(_0x553acc){const _0x2fdc28=_0x28c9;fetch(_0x2fdc28(0x1ca))[_0x2fdc28(0x162)](_0x2a4c32=>_0x2a4c32[_0x2fdc28(0x1de)]())[_0x2fdc28(0x162)](_0x33a0da=>{_0x553acc(_0x33a0da);})[_0x2fdc28(0x1b9)](_0x5a0ac9=>{const _0x30eed2=_0x2fdc28;console[_0x30eed2(0x19e)](_0x30eed2(0x160),_0x5a0ac9);});}function processExerciseInfoData(_0x27f8ad,_0x149ba5){const _0x7d31c2=_0x28c9,_0x564013=deepCopy(_0x27f8ad);for(let _0x5d6db2=0x0;_0x5d6db2<_0x564013[_0x7d31c2(0x1a3)][_0x7d31c2(0x195)];_0x5d6db2++){const _0x173152=_0x564013['weekly_plan_data'][_0x5d6db2];for(let _0xdbbaab=0x0;_0xdbbaab<_0x173152['sections'][_0x7d31c2(0x195)];_0xdbbaab++){const _0x3e3547=_0x173152[_0x7d31c2(0x194)][_0xdbbaab];for(let _0x644096=0x0;_0x644096<_0x3e3547[_0x7d31c2(0x1a8)]['length'];_0x644096++){const _0x5559ae=_0x3e3547[_0x7d31c2(0x1a8)][_0x644096],_0x3abb95=_0x5559ae['id'],_0x19a90e=_0x5559ae[_0x7d31c2(0x175)];for(const _0x337be4 in _0x149ba5){const _0x4317b3=_0x149ba5[_0x337be4],_0x31905c=_0x4317b3[_0x7d31c2(0x1c6)](_0x4ec69e=>_0x4ec69e['id']===_0x3abb95||_0x4ec69e[_0x7d31c2(0x175)]===_0x19a90e);if(_0x31905c)for(const _0x510a86 in _0x31905c){_0x5559ae[_0x510a86]=_0x31905c[_0x510a86];}}}}}const _0x47b37b=new Date()['getTime']();localStorage['setItem']('originalResult',JSON[_0x7d31c2(0x1d0)](_0x27f8ad)),localStorage[_0x7d31c2(0x165)]('workoutResult',JSON[_0x7d31c2(0x1d0)](_0x564013)),localStorage[_0x7d31c2(0x165)]('workoutResultTimestamp',_0x47b37b[_0x7d31c2(0x1d6)]()),getWeeklyWorkingPlanFromLocalStorage();}function showProgress(){const _0x9ffe7f=_0x28c9,_0x4de0f7=document[_0x9ffe7f(0x1c2)]('loading-container'),_0x5821d9=document['getElementById'](_0x9ffe7f(0x193)),_0x5fc24c=document['querySelector'](_0x9ffe7f(0x16f)),_0x356f4f=document[_0x9ffe7f(0x1c2)]('submit-button');_0x4de0f7[_0x9ffe7f(0x15f)]['display']=_0x9ffe7f(0x1d1),_0x5fc24c['textContent']='Our\x20AI\x20is\x20preparing\x20your\x20workout,\x20it\x20might\x20take\x201-2\x20minutes';let _0x129735=0x0;const _0x197f96=0x2*0x3c*0x3e8;let _0x11fb01=Math[_0x9ffe7f(0x181)]()*(1.5-0.5)+0.5;_0x356f4f[_0x9ffe7f(0x15b)]=!![],_0x5821d9['style'][_0x9ffe7f(0x19b)]='0%',timerInterval&&clearInterval(timerInterval),timerInterval=setInterval(function(){const _0xca5a78=_0x9ffe7f;if(_0x129735>=0x64)clearInterval(timerInterval),_0x5fc24c['textContent']='Oppss\x20somthing\x20is\x20wrong!',setTimeout(function(){hideProgress();},0xbb8);else{_0x129735+=_0x11fb01;if(_0x129735>0x64)_0x129735=0x64;_0x5821d9['style'][_0xca5a78(0x19b)]=_0x129735+'%';}},_0x197f96/0x64);}function hideProgress(){const _0x201d12=_0x28c9,_0x4fc968=document['getElementById'](_0x201d12(0x1c0)),_0x5c09ba=document['getElementById'](_0x201d12(0x193)),_0x4d866b=document['querySelector'](_0x201d12(0x16f)),_0x34366f=document['getElementById']('submit-button');let _0x4cab46=parseFloat(_0x5c09ba[_0x201d12(0x15f)]['width']),_0x4501fc;_0x4cab46<0x64?_0x4501fc=setInterval(function(){const _0x526c40=_0x201d12;_0x4cab46+=0x1,_0x5c09ba[_0x526c40(0x15f)][_0x526c40(0x19b)]=_0x4cab46+'%',_0x4cab46>=0x64&&(clearInterval(_0x4501fc),_0x4fc968['style'][_0x526c40(0x197)]=_0x526c40(0x1a7),resetSubmitButton());},0x14):(_0x4fc968['style']['display']='none',resetSubmitButton());}function resetSubmitButton(){const _0x37a9dd=_0x28c9,_0xec0f74=document[_0x37a9dd(0x1c2)](_0x37a9dd(0x1c4));_0xec0f74['disabled']=![];}document['addEventListener'](_0x256b16(0x1aa),async function(){const _0x226022=_0x256b16;let _0x4939a7;const _0x18eb23=new URLSearchParams(window[_0x226022(0x1b7)]['search']);if(_0x18eb23[_0x226022(0x178)](_0x226022(0x159))){const _0x286291=_0x18eb23['get'](_0x226022(0x159));try{const _0x239ed4=decodeURIComponent(_0x286291),_0x208051=pako[_0x226022(0x185)](_0x239ed4,{'to':_0x226022(0x17b)});_0x4939a7=JSON[_0x226022(0x1a0)](_0x208051);}catch(_0x16149b){console[_0x226022(0x19e)]('Error\x20decompressing\x20or\x20parsing\x20result:',_0x16149b);}}resetSubmitButton(),_0x4939a7?fetchExerciseInfoData(_0x37878d=>{processExerciseInfoData(_0x4939a7,_0x37878d);}):getWeeklyWorkingPlanFromLocalStorage();}),document[_0x256b16(0x1c2)]('workout-form')[_0x256b16(0x1d8)](_0x256b16(0x1d9),async function(_0x5bd918){const _0x1ca1a5=_0x256b16;_0x5bd918['preventDefault']();let _0x3f607e=document[_0x1ca1a5(0x1c2)]('fitness-goals'),_0x84ec06=document['getElementById'](_0x1ca1a5(0x17d)),_0x6b8519=_0x3f607e[_0x1ca1a5(0x1cd)](_0x1ca1a5(0x17c)),_0x45783e=_0x84ec06[_0x1ca1a5(0x1cd)]('input[type=\x22checkbox\x22]'),_0x394ab1=Array[_0x1ca1a5(0x166)](_0x6b8519)[_0x1ca1a5(0x1ae)](_0x5872f4=>_0x5872f4[_0x1ca1a5(0x1a4)]),_0x134c19=Array[_0x1ca1a5(0x166)](_0x45783e)['some'](_0x1d27c1=>_0x1d27c1[_0x1ca1a5(0x1a4)]);document[_0x1ca1a5(0x1c2)](_0x1ca1a5(0x19a))['textContent']='',document[_0x1ca1a5(0x1c2)](_0x1ca1a5(0x172))[_0x1ca1a5(0x1ce)]='';if(!_0x394ab1){document['getElementById']('fitness-goals-error')[_0x1ca1a5(0x1ce)]=_0x1ca1a5(0x16b);return;}if(!_0x134c19){document[_0x1ca1a5(0x1c2)](_0x1ca1a5(0x172))[_0x1ca1a5(0x1ce)]='Please\x20select\x20at\x20least\x20one\x20option\x20in\x20Equipment\x20Access.';return;}showProgress();const _0x111ea3=new FormData(this);let _0x44bee2=_0x111ea3[_0x1ca1a5(0x16d)](_0x1ca1a5(0x18a));_0x44bee2===_0x1ca1a5(0x180)&&(_0x44bee2=_0x111ea3[_0x1ca1a5(0x16d)](_0x1ca1a5(0x164)));const _0xf8e994={'age':Number(_0x111ea3['get']('age')),'gender':_0x111ea3['get'](_0x1ca1a5(0x1af)),'skillLevel':_0x111ea3[_0x1ca1a5(0x16d)](_0x1ca1a5(0x199)),'timesPerWeek':Number(_0x111ea3['get']('days_per_week')),'sessionDuration':Number(_0x111ea3['get']('session_time')),'planFocusExerciseArray':Array[_0x1ca1a5(0x166)](_0x111ea3['getAll'](_0x1ca1a5(0x1bf))),'healthStatus':_0x44bee2,'EquipmentsArray':Array['from'](_0x111ea3['getAll']('equipment_access')),'moreInfoText':_0x111ea3[_0x1ca1a5(0x16d)](_0x1ca1a5(0x1a9))};try{const _0x14b8ce=await fetch('https://workoutplan.simplystud.io/api/assistant',{'method':_0x1ca1a5(0x16a),'headers':{'Content-Type':'application/json'},'body':JSON[_0x1ca1a5(0x1d0)](_0xf8e994)});hideProgress();if(_0x14b8ce['ok']){const _0x570b2b=JSON[_0x1ca1a5(0x1a0)](await _0x14b8ce[_0x1ca1a5(0x1de)]());fetchExerciseInfoData(_0x3d2e69=>{processExerciseInfoData(_0x570b2b,_0x3d2e69);});}else alert('An\x20error\x20occurred\x20while\x20fetching\x20data\x20from\x20the\x20API.');}catch(_0x34df41){console[_0x1ca1a5(0x19e)](_0x1ca1a5(0x15d),_0x34df41),alert(_0x1ca1a5(0x1b5));}finally{loadingGauge[_0x1ca1a5(0x15f)][_0x1ca1a5(0x1dd)]='0';}});const healthOptions=document[_0x256b16(0x1cd)]('input[name=\x22health\x22]');healthOptions[_0x256b16(0x1c5)](function(_0x46a238){const _0x5c79bd=_0x256b16;_0x46a238[_0x5c79bd(0x1d8)](_0x5c79bd(0x1ac),function(){const _0xc38bc6=_0x5c79bd,_0x4fecb0=document[_0xc38bc6(0x18e)](_0xc38bc6(0x1d4));this[_0xc38bc6(0x19d)]==='other'?_0x4fecb0[_0xc38bc6(0x171)](_0xc38bc6(0x15b)):(_0x4fecb0[_0xc38bc6(0x1b6)](_0xc38bc6(0x15b),_0xc38bc6(0x15b)),_0x4fecb0['value']='');});}),document[_0x256b16(0x18e)](_0x256b16(0x17e))[_0x256b16(0x1d8)](_0x256b16(0x1b8),function(){window['print']();}),document['querySelector'](_0x256b16(0x1c9))[_0x256b16(0x1d8)]('click',function(){const _0x34a6ce=_0x256b16;localStorage[_0x34a6ce(0x1c1)](_0x34a6ce(0x1b3)),localStorage[_0x34a6ce(0x1c1)](_0x34a6ce(0x183)),document[_0x34a6ce(0x1c2)](_0x34a6ce(0x155))['innerHTML']='',toggleStages(),console[_0x34a6ce(0x18c)](_0x34a6ce(0x1a1));});</script>
+
+</body>
+
+</html>

@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Online Workout Planner - Create Your Free Workout Plan</title>
+	<meta name="description"
+		content="Energize your fitness journey with our online workout planner. Create a personalized workout plan for free in just 2 minutes. Get started now!">
+
+	<script src="https://cdn.tailwindcss.com"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.0.4/pako.min.js"></script>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+	<link href="https://fonts.googleapis.com/css?family=Poppins:400,600,700&display=swap" rel="stylesheet">
+	<style>
+		body {
+			font-family: 'Poppins', sans-serif;
+			color: #210437;
+		}
+
+		.form-input,
+		.form-select,
+		.form-checkbox {
+			background-color: #e9daf9;
+			color: #34495e;
+		}
+
+		button:disabled {
+			background-color: #ccc;
+			/* Gray background */
+			color: #666;
+			/* Gray text color */
+			cursor: not-allowed;
+			/* Change cursor to not-allowed */
+		}
+
+		.table-bordered {
+			border: 1px solid #000;
+		}
+
+		.table-bordered td,
+		.table-bordered th {
+			border: 1px solid #000;
+		}
+
+		.close-button {
+			position: absolute;
+			top: 5px;
+			right: 5px;
+			cursor: pointer;
+		}
+
+		.list-disc {
+			list-style-type: none !important;
+		}
+
+		.bullet-list {
+			list-style: none;
+			padding-left: 0;
+		}
+
+		.bullet-list li {
+			position: relative;
+			margin-bottom: 10px;
+			padding-left: 30px;
+		}
+
+		.bullet-list li::before {
+			content: "\2022";
+			/* Unicode bullet character */
+			position: absolute;
+			left: 0;
+			top: 50%;
+			transform: translateY(-50%);
+		}
+
+		/* Preparing Progress */
+		#progress-bar {
+			height: 20px;
+			background-color: #4A90E2;
+			border-radius: 4px;
+			/* Rounded corners */
+		}
+
+		/* Add style for the loading message */
+		.loading-message {
+			font-weight: bold;
+			margin-top: 10px;
+		}
+
+		/* Center loading container in the middle of the page */
+		#loading-container {
+			display: none;
+			position: fixed;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			text-align: center;
+			background-color: rgba(255, 255, 255, 0.9);
+			padding: 20px;
+			border-radius: 10px;
+			box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+		}
+	</style>
+</head>
+
+<body class="text-purple-900 text-md">
+	<div class="min-h-screen bg-gray-100 p-0 sm:p-10">
+		<div class="max-w-3xl mx-auto bg-white p-0 sm:p-6">
+			<div id="form_stage" style="display: block;">
+
+
+				<img
+					src="https://jbuwdk1d7uenrxyq.public.blob.vercel-storage.com/html/images/workoutplan_hero_picture_app-vhrchksEJMmuYIvwpppCKCR0LMWAr9.webp"
+					alt="Workout Plan" width="800" height="600">
+
+				<h1 class="text-xl md:text-3xl font-bold text-left mt-4">Your AI-Powered Workout Plan
+					for <span class="text-purple-600 font-bold text-2xl md:text-3xl">Fitness</span>
+				</h1>
+
+
+				<p class="text-md text-left m-4">We're thrilled to introduce our brand-new, <span class="font-bold text-lg">free
+						exercise
+						planner</span> – your
+					ticket to a customized workout plan in just 2 minutes flat.</p>
+				<p class="text-left m-4">The best part? <span class="font-bold text-lg">It won't cost you a dime!</span> Our
+					cutting-edge tool harnesses the power of AI to handpick exercises from our expertly curated list, endorsed by
+					top fitness
+					trainers.</p>
+				<div class="m-4 bg-yellow-50 p-4 rounded-sm">
+					Here's how to get started:
+					<ul class="bullet-list mt-4">
+						<li>Fill in your details in the form below. &#128071;</li>
+						<li>If you want a specific workout routine, like PPL (Push-Pull-Legs), mention it in the 'More Info'
+							section.</li>
+						<li>Click <span class="font-bold">'Get Your Weekly Planner'</span> button, and in just 2 minutes, your
+							personalized
+							workout plan will be ready.</li>
+					</ul>
+				</div>
+				<p class="text-left m-4">Our tool is optimized for popular split routines such as Upper/Lower, Push/Pull, and
+					Push/Pull/Legs. These routines efficiently target specific muscle groups for better results. Whether you're a
+					beginner
+					or a pro, we've got the perfect plan to help you achieve your fitness goals. By default, we start with a
+					full-body
+					routine to kickstart your fitness journey. So, what are you waiting for?</p>
+
+
+				<p class="text-left m-4 font-bold text-xl">Let's get moving!</p>
+
+				<div class="form-section bg-purple-50 rounded-lg p-4 sm:p-6">
+					<form class="space-y-6 mt-6" id="workout-form">
+						<div class="grid grid-cols-2 gap-6">
+							<!-- Age and Gender -->
+							<input type="number" min="16" name="age" placeholder="Your Age (+16)" class="form-input rounded-md p-2"
+								required>
+							<div>
+								<label class="inline-flex items-center">
+									<input type="radio" class="form-radio" name="gender" value="Male" checked>
+									<i class="fas fa-male text-lg ml-2"></i>
+								</label>
+								<label class="inline-flex items-center ml-6">
+									<input type="radio" class="form-radio" name="gender" value="Female">
+									<i class="fas fa-female text-lg ml-2"></i>
+								</label>
+							</div>
+						</div>
+						<!-- Error message for Age -->
+						<div id="age-error" class="text-red-600"></div>
+						<!-- Fitness Level -->
+						<select class="form-select rounded-md p-2 w-full" name="fitness_level" required>
+							<option value="" selected disabled>Fitness Level</option>
+							<option value="beginner">Beginner</option>
+							<option value="intermediate">Intermediate</option>
+							<option value="advanced">Advanced</option>
+						</select>
+						<!-- Fitness Goal -->
+						<div>
+							<p class="mb-4">Fitness Goal (select at least one):</p>
+							<div class="grid grid-cols-2 md:grid-cols-3 gap-4" id="fitness-goals">
+								<label class="inline-flex items-center">
+									<input type="checkbox" class="form-checkbox text-purple-500 h-5 w-5" name="fitness_goal"
+										value="weight_loss">
+									<span class="ml-2 text-gray-700">Weight Loss</span>
+								</label>
+								<label class="inline-flex items-center">
+									<input type="checkbox" class="form-checkbox text-purple-500 h-5 w-5" name="fitness_goal"
+										value="strength">
+									<span class="ml-2 text-gray-700">Strength</span>
+								</label>
+								<label class="inline-flex items-center">
+									<input type="checkbox" class="form-checkbox text-purple-500 h-5 w-5" name="fitness_goal"
+										value="muscle_building">
+									<span class="ml-2 text-gray-700">Muscle Building</span>
+								</label>
+								<label class="inline-flex items-center">
+									<input type="checkbox" class="form-checkbox text-purple-500 h-5 w-5" name="fitness_goal"
+										value="toning">
+									<span class="ml-2 text-gray-700">Toning</span>
+								</label>
+								<label class="inline-flex items-center">
+									<input type="checkbox" class="form-checkbox text-purple-500 h-5 w-5" name="fitness_goal"
+										value="endurance">
+									<span class="ml-2 text-gray-700">Endurance</span>
+								</label>
+							</div>
+						</div>
+						<div id="fitness-goals-error" class="text-red-600"></div>
+						<!-- Time Availability -->
+						<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+							<input type="number" name="days_per_week" min="1" max="7" placeholder="Max days per week (1-7)"
+								class="form-input rounded-md p-2" required>
+							<input type="number" name="session_time" min="30" max="90" step="5"
+								placeholder="Max session time (30-90 min)" class="form-input rounded-md p-2" required>
+						</div>
+						<!-- Health and Injuries -->
+						<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+							<label class="inline-flex items-center">
+								<input type="radio" class="form-radio" name="health" value="no injuries" checked>
+								<span class="ml-2">No Injuries</span>
+							</label>
+							<div class="grid grid-cols-3 gap-4">
+								<label class="inline-flex items-center col-span-1">
+									<input type="radio" class="form-radio" name="health" value="other">
+									<span class="ml-2">Other</span>
+								</label>
+								<input type="text" name="injury_specification" maxlength="50" placeholder="Specify injury"
+									class="form-input rounded-md p-2 ml-4 col-span-2" disabled>
+							</div>
+						</div>
+
+						<div>
+							<p class="mb-4">Equipment Access (select at least one):</p>
+							<div class="grid grid-cols-2 md:grid-cols-3 gap-4" id="equipment-access">
+								<label class="inline-flex items-center">
+									<input type="checkbox" class="form-checkbox text-purple-500 h-5 w-5" name="equipment_access"
+										value="body_weight" checked>
+									<span class="ml-2 text-gray-700">Body Weight</span>
+								</label>
+								<label class="inline-flex items-center">
+									<input type="checkbox" class="form-checkbox text-purple-500 h-5 w-5" name="equipment_access"
+										value="kettlebells">
+									<span class="ml-2 text-gray-700">Kettlebells</span>
+								</label>
+								<label class="inline-flex items-center">
+									<input type="checkbox" class="form-checkbox text-purple-500 h-5 w-5" name="equipment_access"
+										value="dumbells">
+									<span class="ml-2 text-gray-700">Dumbbells</span>
+								</label>
+								<label class="inline-flex items-center">
+									<input type="checkbox" class="form-checkbox text-purple-500 h-5 w-5" name="equipment_access"
+										value="medicine_ball">
+									<span class="ml-2 text-gray-700">Medicine ball</span>
+								</label>
+								<label class="inline-flex items-center">
+									<input type="checkbox" class="form-checkbox text-purple-500 h-5 w-5" name="equipment_access"
+										value="resistance_bands">
+									<span class="ml-2 text-gray-700">Res. Bands</span>
+								</label>
+								<label class="inline-flex items-center">
+									<input type="checkbox" class="form-checkbox text-purple-500 h-5 w-5" name="equipment_access"
+										value="box">
+									<span class="ml-2 text-gray-700">Box</span>
+								</label>
+							</div>
+
+						</div>
+						<!-- Error message for Equipment Access -->
+						<div id="fitness-equipment-access-error" class="text-red-600"></div>
+						<!-- Additional Info -->
+						<div>
+							<p class="mb-4">Please feel free to add more info:</p>
+							<textarea name="additional_info" placeholder="Please focus on the lower body and back this month"
+								class="form-input rounded-md p-2 w-full" rows="4"></textarea>
+						</div>
+						<!-- Submit Button with loading gauge -->
+						<button type="submit" class="w-full bg-purple-800 text-white px-4 py-2 rounded-md relative"
+							id="submit-button">
+							<span id="submit-button-text">Get Your Weekly Planner</span>
+						</button>
+
+						<!-- Preapring progress -->
+						<div id="loading-container" class="hidden">
+							<div class="progress-container">
+								<div class="progress-bar" id="progress-bar"></div>
+							</div>
+							<p class="loading-message">Our AI is preparing your workout, it might take 1-2 minutes</p>
+						</div>
+
+					</form>
+				</div>
+			</div>
+
+			<div id="result_stage" style="display: none;">
+				<!-- Toolbar buttons -->
+				<div class="flex justify-between mb-6">
+					<div class="space-x-2">
+						<span>MONTH:</span>
+						<input type="text" class="border-b-2 border-black w-8">
+						<span>YEAR:</span>
+						<input type="text" class="border-b-2 border-black w-12">
+					</div>
+
+					<div class="flex justify-end mb-4">
+						<button id="clean-button"
+							class="bg-transparent border border-purple-500 text-purple-500 hover:bg-purple-500 hover:text-white py-2 px-4 rounded outline-none mr-2">
+							Clean
+						</button>
+						<button id="print-button"
+							class="bg-transparent border border-purple-500 text-purple-500 hover:bg-purple-500 hover:text-white py-2 px-4 rounded outline-none mr-2">
+							Print
+						</button>
+						<!-- <button id="share-button"
+							class="bg-transparent border border-purple-500 text-purple-500 hover:bg-purple-500 hover:text-white py-2 px-4 rounded outline-none">
+							Share
+						</button> -->
+					</div>
+				</div>
+				<div class="flex justify-between mb-6">
+					<h1 class="text-3xl font-bold">ULTIMATE WORKOUT PLANNER</h1>
+				</div>
+
+				<div id="workout_plan_title" class="bg-gray-300 p-2 text-lg font-semibold mb-6">Workout Plan (3 Days a Week)
+				</div>
+
+				<!-- Dynamic workout plan goes here -->
+				<div id="workout_plan"></div>
+
+				<!-- Static sections-->
+
+				<div class="bg-gray-300 p-2 text-lg font-semibold mb-6">Weekly Schedule</div>
+				<table class="table-bordered w-full text-center mb-6" style="table-layout: fixed;">
+					<colgroup>
+						<col style="width: 14.28%;">
+						<col style="width: 14.28%;">
+						<col style="width: 14.28%;">
+						<col style="width: 14.28%;">
+						<col style="width: 14.28%;">
+						<col style="width: 14.28%;">
+						<col style="width: 14.28%;">
+					</colgroup>
+					<tr>
+						<th>Mon</th>
+						<th>Tue</th>
+						<th>Wed</th>
+						<th>Thu</th>
+						<th>Fri</th>
+						<th>Sat</th>
+						<th>Sun</th>
+					</tr>
+					<!-- Rows repeated for each time slot -->
+					<tr>
+						<td class="h-16"></td>
+						<td class="h-16"></td>
+						<td class="h-16"></td>
+						<td class="h-16"></td>
+						<td class="h-16"></td>
+						<td class="h-16"></td>
+						<td class="h-16"></td>
+					</tr>
+					<!-- Placeholder for time slots -->
+				</table>
+
+				<div class="bg-gray-300 p-2 text-lg font-semibold mb-6">Monthly Progress Tracker</div>
+				<table class="table-bordered w-full text-center">
+					<tr>
+						<th>Month</th>
+						<th>Weight (lbs/kg)</th>
+						<th>Body Fat (%)</th>
+						<th>Measurements (Chest, Waist, Hips, etc.)</th>
+					</tr>
+					<!-- Rows repeated for each month -->
+					<!-- Rows repeated for each time slot -->
+					<tr>
+						<td class="h-16"></td>
+						<td class="h-16"></td>
+						<td class="h-16"></td>
+						<td class="h-16"></td>
+					</tr>
+					<!-- Placeholder for time slots -->
+
+				</table>
+			</div>
+
+		</div>
+	</div>
+
+	<script>
+		let timerInterval; // Define a variable to store the timer interval
+
+		// Utility Functions
+		function deepCopy(obj) {
+			if (typeof obj !== 'object' || obj === null) {
+				return obj;
+			}
+
+			if (Array.isArray(obj)) {
+				const copyArr = [];
+				for (let i = 0; i < obj.length; i++) {
+					copyArr[i] = deepCopy(obj[i]);
+				}
+				return copyArr;
+			}
+
+			const copyObj = {};
+			for (const key in obj) {
+				if (Object.hasOwnProperty.call(obj, key)) {
+					copyObj[key] = deepCopy(obj[key]);
+				}
+			}
+			return copyObj;
+		}
+
+		function isDataOlderThanOneMonth(storedTimestamp) {
+			if (!storedTimestamp) {
+				// If no timestamp is available, consider it as older
+				return true;
+			}
+
+			const oneMonthInMilliseconds = 30 * 24 * 60 * 60 * 1000; // Approx. 30 days
+
+			// Get the current timestamp in milliseconds
+			const currentTimestamp = Date.now();
+
+			// Calculate the difference between the current timestamp and the stored timestamp
+			const timeDifference = currentTimestamp - storedTimestamp;
+
+			// Compare the time difference with one month
+			return timeDifference > oneMonthInMilliseconds;
+		}
+
+		function generateExerciseInfoBox(exercise) {
+			let html = `
+    <div class="exercise-container bg-purple-50 p-2 mx-auto hidden">
+      <p class=" mb-2">${exercise.more_info.description}</p>`;
+
+			// Check if there are more references
+			if (exercise.more_info.more_refs) {
+
+
+				// Add a title for the references section
+				html += `<div class="bg-yellow-50 p-4 border-l-4 border-yellow-600">
+									<p class="font-semibold">External links:</p>`;
+
+				// Iterate through the more references and add links
+				exercise.more_info.more_refs.forEach((ref, index) => {
+					if (ref.link) {
+						// If it's a link, add a link element with title and URL
+						html += `<a href="${ref.link}" class="text-blue-500 hover:underline" target="_blank">${ref.title || 'Link ' + (index + 1)}</a><br>`;
+					}
+				});
+
+				html += `</div>`;
+
+				html += `<div class="flex justify-between items-center mb-1 mt-8">`;
+
+				// Iterate through the more references and add images
+				exercise.more_info.more_refs.forEach((ref, index) => {
+					if (ref.image) {
+						// If it's an image, add an image element
+						html += `<img src="${ref.image}" alt="Image ${index + 1}" class="border-2 bg-white border-gray-300 rounded-md mb-4 mr-4">`;
+					}
+				});
+
+				html += `</div>`;
+			}
+
+			html += `<p class="text-gray-700 mb-4"><i class="fas fa-lightbulb text-yellow-500"></i> Tip: ${exercise.more_info.tips_text}</p>`;
+
+			html += `</div>`;
+
+			return html;
+		}
+
+		function toggleExerciseInfoBox(element) {
+			const infoBox = element.nextElementSibling;
+			infoBox.classList.toggle('hidden');
+		}
+
+
+		function generateWeeklyWorkoutPlan(weeklyPlanData) {
+			let html = '';
+
+			weeklyPlanData.forEach((dayData) => {
+				html += '<div class="mb-6">';
+				html += `<h2 class="font-bold mb-3 bg-purple-200 py-2 px-4 rounded-lg">${dayData.day}</h2>`;
+				html += '<div class="ml-4">';
+
+				// Initialize a counter for each day
+				let exerciseCounter = 1;
+
+				dayData.sections.forEach((section) => {
+					html += `<div class="text-purple-800 font-bold mb-3 mt-3">${section.title} (${section.time_text}):</div>`;
+					html += '<ul class="list-disc ml-0 sm:ml-8">';
+					section.exercises.forEach((exercise) => {
+						html += `<li  class="pl-0 mb-2"><div class="font-bold text-xs text-purple-600">Exercise #${exerciseCounter}</div><span class="font-bold">${exercise.name}</span> <i>${exercise.setReps}</i>`;
+						// Modify your original code where you create the exercise box
+						if (exercise.more_info) {
+							html += `<span class="text-blue-500" onclick="toggleExerciseInfoBox(this)" style="cursor: pointer;">  [more info]</span>`;
+							html += generateExerciseInfoBox(exercise);
+						}
+
+						html += '</li>';
+						exerciseCounter++; // Increment the exercise counter for each exercise
+					});
+					html += '</ul>';
+				});
+
+				html += '</div></div>';
+			});
+
+			return html;
+		}
+
+
+		// function generateWeeklyWorkoutPlan(weeklyPlanData) {
+		// 	let html = '';
+
+		// 	weeklyPlanData.forEach((dayData) => {
+		// 		html += '<div class="mb-6">';
+		// 		html += `<h2 class="font-bold mb-3 bg-purple-200 py-2 px-4 rounded-lg">${dayData.day}</h2>`;
+		// 		html += '<div class="ml-4">';
+
+		// 		dayData.sections.forEach((section) => {
+		// 			html += `<div class="text-purple-800 font-bold mb-3 mt-3">${section.title} (${section.time_text}):</div>`;
+		// 			html += '<ul class="list-disc ml-0 sm:ml-8">';
+		// 			section.exercises.forEach((exercise) => {
+
+		// 				html += `<li  class="pl-0"><span class="font-bold">${exercise.name}</span> <i>${exercise.setReps}</i>`;
+		// 				// Modify your original code where you create the exercise box
+		// 				if (exercise.more_info) {
+		// 					html += `<span class="text-blue-500" onclick="toggleExerciseInfoBox(this)" style="cursor: pointer;">  [more info]</span>`;
+		// 					html += generateExerciseInfoBox(exercise);
+		// 				}
+
+		// 				html += '</li>';
+		// 			});
+		// 			html += '</ul>';
+		// 		});
+
+		// 		html += '</div></div>';
+		// 	});
+
+		// 	return html;
+		// }
+
+		function getWeeklyWorkingPlanFromLocalStorage() {
+			// Retrieve the weekly_plan_data from local storage
+			const storedWeeklyPlanData = JSON.parse(localStorage.getItem('workoutResult'));
+			const storedTimestamp = localStorage.getItem('workoutResultTimestamp');
+
+			// Check if the stored data is available and not empty
+			if (storedWeeklyPlanData && storedWeeklyPlanData.weekly_plan_data && storedWeeklyPlanData.weekly_plan_data.length > 0 && storedTimestamp && !isDataOlderThanOneMonth(Number(storedTimestamp))) {
+				// Generate and display the workout day widgets for the stored data
+				const widgetContainer = document.createElement("div");
+				widgetContainer.innerHTML = generateWeeklyWorkoutPlan(storedWeeklyPlanData.weekly_plan_data);
+				document.getElementById("workout_plan").appendChild(widgetContainer);
+
+				const workoutPlanTitle = document.getElementById("workout_plan_title");
+				const planLength = storedWeeklyPlanData.weekly_plan_data.length;
+
+				workoutPlanTitle.textContent = `Workout Plan (${planLength} Days a Week)`;
+
+				// Automatically toggle to the result stage if data exists
+				toggleStages("resultStage");
+			} else {
+				// Handle the case when no data is available in local storage
+				// You can display a message or take appropriate action here
+				console.log("No workout data available in local storage.");
+			}
+		}
+
+		function toggleStages(switchTo = null) {
+			const formStage = document.getElementById("form_stage");
+			const resultStage = document.getElementById("result_stage");
+
+			if (switchTo === "formStage") {
+				formStage.style.display = "block";
+				resultStage.style.display = "none";
+			} else if (switchTo === "resultStage") {
+				formStage.style.display = "none";
+				resultStage.style.display = "block";
+			} else if (switchTo === null) {
+				if (formStage.style.display === "none") {
+					formStage.style.display = "block";
+					resultStage.style.display = "none";
+				} else {
+					formStage.style.display = "none";
+					resultStage.style.display = "block";
+				}
+			}
+		}
+
+		function resetSubmitButton() {
+			const submitButton = document.getElementById('submit-button');
+			const submitButtonText = document.getElementById('submit-button-text');
+
+			// Revert the button to its original state
+			submitButton.disabled = false;
+			submitButtonText.textContent = 'Get Your Weekly Planner';
+		}
+
+		// Function to fetch exercise information data
+		function fetchExerciseInfoData(callback) {
+			fetch('https://jbuwdk1d7uenrxyq.public.blob.vercel-storage.com/html/workout_excersice_full_data-9iz0PvcPDWRc5oX0YJ96lqWxrf6Xrm.json')
+				.then(response => response.json())
+				.then(exerciseInfoData => {
+					callback(exerciseInfoData);
+				})
+				.catch(error => {
+					console.error('Failed to fetch exercise info:', error);
+					// You can handle errors here, e.g., show an alert or log the error.
+				});
+		}
+
+
+
+		// New function to process exercise information data
+		function processExerciseInfoData(originalResult, exerciseInfoData) {
+			const result = deepCopy(originalResult);
+
+			// Iterate through the weekly_plan_data in the result JSON
+			for (let i = 0; i < result.weekly_plan_data.length; i++) {
+				const dayData = result.weekly_plan_data[i];
+
+				// Iterate through the sections of each day
+				for (let j = 0; j < dayData.sections.length; j++) {
+					const section = dayData.sections[j];
+
+					// Iterate through the exercises within each section
+					for (let k = 0; k < section.exercises.length; k++) {
+						const exercise = section.exercises[k];
+						const exerciseID = exercise.id; // Assuming you have an 'id' attribute in the exercise
+						const exerciseName = exercise.name; // Assuming you have an 'id' attribute in the exercise
+
+						// Check each category for the exercise
+						for (const category in exerciseInfoData) {
+							const categoryExercises = exerciseInfoData[category];
+
+							// Find the corresponding exercise in the category by matching the exercise ID
+							const matchingExercise = categoryExercises.find(infoExercise => infoExercise.id === exerciseID || infoExercise.name === exerciseName);
+
+							if (matchingExercise) {
+								// Merge all attributes from matchingExercise to exercise in the result JSON
+								for (const key in matchingExercise) {
+									exercise[key] = matchingExercise[key];
+								}
+							}
+						}
+					}
+				}
+			}
+
+			// Store the JSON result in local storage along with the timestamp
+			const currentTime = new Date().getTime();
+			localStorage.setItem('originalResult', JSON.stringify(originalResult));
+			localStorage.setItem('workoutResult', JSON.stringify(result));
+			localStorage.setItem('workoutResultTimestamp', currentTime.toString()); // Store the timestamp as a string
+
+			getWeeklyWorkingPlanFromLocalStorage();
+		}
+
+		function showProgress() {
+			const loadingContainer = document.getElementById('loading-container');
+			const progressBar = document.getElementById('progress-bar');
+			const loadingMessage = document.querySelector('.loading-message');
+			const submitButton = document.getElementById('submit-button');
+
+			loadingContainer.style.display = 'block';
+			loadingMessage.textContent = "Our AI is preparing your workout, it might take 1-2 minutes";
+
+			let width = 0;
+			const interval = 2 * 60 * 1000;
+			let step = Math.random() * (1.5 - 0.5) + 0.5; // Randomize the step between 0.5% and 1.5%
+
+			submitButton.disabled = true;
+
+			// Clear the previous interval if any
+			progressBar.style.width = '0%';
+			if (timerInterval) {
+				clearInterval(timerInterval);
+			}
+
+			timerInterval = setInterval(function () {
+				if (width >= 100) {
+					clearInterval(timerInterval);
+					loadingMessage.textContent = "Oppss somthing is wrong!";
+					setTimeout(function () {
+						hideProgress();
+					}, 3000);
+				} else {
+					width += step;
+					if (width > 100) width = 100;
+					progressBar.style.width = width + '%';
+				}
+			}, (interval / 100)); // Divide by 100 to match the step percentage
+		}
+
+		function hideProgress() {
+			const loadingContainer = document.getElementById('loading-container');
+			const progressBar = document.getElementById('progress-bar');
+			const loadingMessage = document.querySelector('.loading-message');
+			const submitButton = document.getElementById('submit-button');
+
+			// Animate the progress to 100% in two seconds
+			let width = parseFloat(progressBar.style.width);
+			let animationInterval;
+
+			if (width < 100) {
+				animationInterval = setInterval(function () {
+					width += 1;
+					progressBar.style.width = width + '%';
+					if (width >= 100) {
+						clearInterval(animationInterval);
+						loadingContainer.style.display = 'none';
+						resetSubmitButton();
+					}
+				}, 20);
+			} else {
+				loadingContainer.style.display = 'none';
+				resetSubmitButton();
+			}
+		}
+
+		function resetSubmitButton() {
+			const submitButton = document.getElementById('submit-button');
+			submitButton.disabled = false;
+		}
+
+		// Event Listeners
+		document.addEventListener('DOMContentLoaded', async function () {
+			let result;
+			// Check if 'result' is present in the URL
+			const urlParams = new URLSearchParams(window.location.search);
+			if (urlParams.has('result')) {
+				// 'result' parameter found in the URL, decode and use it
+				const compressedResult = urlParams.get('result');
+				try {
+					const decodedData = decodeURIComponent(compressedResult);
+					const data = pako.ungzip(decodedData, { to: 'string' });
+					result = JSON.parse(data);
+				} catch (error) {
+					console.error('Error decompressing or parsing result:', error);
+				}
+			}
+
+			resetSubmitButton();
+
+			// Check if 'result' is already populated
+			if (result) {
+				fetchExerciseInfoData(exerciseInfoData => {
+					processExerciseInfoData(result, exerciseInfoData);
+				});
+			} else {
+				// 'result' is not available, load from local storage
+				getWeeklyWorkingPlanFromLocalStorage();
+			}
+		});
+
+
+		document.getElementById('workout-form').addEventListener('submit', async function (e) {
+			e.preventDefault(); // Prevent form submission to show results (will be handled by API later)
+
+
+			let goalsSection = document.getElementById('fitness-goals');
+			let equipmentSection = document.getElementById('equipment-access');
+			let goalCheckboxes = goalsSection.querySelectorAll('input[type="checkbox"]');
+			let equipmentCheckboxes = equipmentSection.querySelectorAll('input[type="checkbox"]');
+
+			let goalChecked = Array.from(goalCheckboxes).some(checkbox => checkbox.checked);
+			let equipmentChecked = Array.from(equipmentCheckboxes).some(checkbox => checkbox.checked);
+
+			document.getElementById('fitness-goals-error').textContent = '';
+			document.getElementById('fitness-equipment-access-error').textContent = '';
+
+			if (!goalChecked) {
+				document.getElementById('fitness-goals-error').textContent = 'Please select at least one option in Fitness Goal.';
+				return;
+			}
+
+			if (!equipmentChecked) {
+				document.getElementById('fitness-equipment-access-error').textContent = 'Please select at least one option in Equipment Access.';
+				return;
+			}
+
+
+			showProgress();
+
+			// Prepare data for API request
+			const formData = new FormData(this);
+
+			let healthStatus = formData.get('health');
+			if (healthStatus === 'other') {
+				healthStatus = formData.get('injury_specification');
+			}
+
+			const requestBody = {
+				age: Number(formData.get('age')),
+				gender: formData.get('gender'),
+				skillLevel: formData.get('fitness_level'),
+				timesPerWeek: Number(formData.get('days_per_week')),
+				sessionDuration: Number(formData.get('session_time')),
+				planFocusExerciseArray: Array.from(formData.getAll('fitness_goal')),
+				healthStatus: healthStatus, // Updated health status
+				EquipmentsArray: Array.from(formData.getAll('equipment_access')),
+				moreInfoText: formData.get('additional_info'),
+			};
+
+			// Make the API POST request
+			try {
+				const response = await fetch('https://workoutplan.simplystud.io/api/assistant', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify(requestBody),
+				});
+
+				hideProgress();
+
+				if (response.ok) {
+					const result = JSON.parse(await response.json());
+
+					fetchExerciseInfoData(exerciseInfoData => {
+						processExerciseInfoData(result, exerciseInfoData);
+					});
+
+				} else {
+					// Display an alert on error
+					alert('An error occurred while fetching data from the API.');
+				}
+			} catch (error) {
+				console.error('API call failed:', error);
+				// Display an alert on error
+				alert('An error occurred while fetching data from the API.');
+			} finally {
+				// Hide the loading gauge
+				loadingGauge.style.opacity = '0';
+			}
+		});
+
+		// Attach event listener to the entire radio button group
+		const healthOptions = document.querySelectorAll('input[name="health"]');
+		healthOptions.forEach(function (option) {
+			option.addEventListener('change', function () {
+				const injuryInput = document.querySelector('input[name="injury_specification"]');
+				if (this.value === 'other') {
+					injuryInput.removeAttribute('disabled');
+				} else {
+					injuryInput.setAttribute('disabled', 'disabled');
+					injuryInput.value = ''; // Clear the input value
+				}
+			});
+		});
+
+		// ##### TOOLBAR #####
+		document.querySelector('#print-button').addEventListener('click', function () {
+			window.print();
+		});
+
+		document.querySelector('#clean-button').addEventListener('click', function () {
+			// Remove the workout data and timestamp from local storage
+			localStorage.removeItem('workoutResult');
+			localStorage.removeItem('workoutResultTimestamp');
+
+			// Clear the displayed workout plan
+			document.getElementById("workout_plan").innerHTML = "";
+
+			toggleStages();
+
+			// Add any additional logic or feedback here
+			console.log("Workout data cleaned from local storage.");
+		});
+
+		// document.querySelector('#share-button').addEventListener('click', function () {
+		// 	// Get the "originalResult" from local storage
+		// 	const originalResult = JSON.parse(localStorage.getItem('originalResult'));
+		// 	const compressedResult = pako.gzip(JSON.stringify(originalResult), { to: 'string' });
+
+		// 	// Share the compressedResult instead of originalResult
+
+
+		// 	// Construct the URL with the "result" parameter
+		// 	const apiUrl = 'https://workout-plan-serverless-function.vercel.app/api/plan';
+		// 	const queryParams = `?result=${encodeURIComponent(compressedResult)}`;
+		// 	const shareUrl = apiUrl + queryParams;
+
+		// 	// Check if the browser supports the Web Share API
+		// 	if (navigator.share) {
+		// 		navigator.share({
+		// 			title: 'Share Workout Plan',
+		// 			text: 'Check out my workout plan!',
+		// 			url: shareUrl
+		// 		}).then(() => {
+		// 			console.log('Shared successfully');
+		// 		}).catch((error) => {
+		// 			console.error('Error sharing:', error);
+		// 		});
+		// 	} else {
+		// 		// Fallback for browsers that don't support the Web Share API
+		// 		console.log('Web Share API not supported');
+		// 		// You can implement a custom sharing solution here.
+		// 		// For example, you can copy the share URL to the clipboard.
+
+		// 		// Create a temporary input element to copy the URL
+		// 		const tempInput = document.createElement('input');
+		// 		tempInput.value = shareUrl;
+		// 		document.body.appendChild(tempInput);
+
+		// 		// Select and copy the URL
+		// 		tempInput.select();
+		// 		document.execCommand('copy');
+
+		// 		// Remove the temporary input element
+		// 		document.body.removeChild(tempInput);
+
+		// 		// Provide feedback to the user
+		// 		alert('The shareable link has been copied to the clipboard.');
+		// 	}
+		// });
+
+	</script>
+
+</body>
+
+</html>

@@ -4,7 +4,7 @@ import fetch from 'node-fetch'; // Import fetch for HTTP requests
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
 	if (req.method === 'GET') {
-		const templateUrl = 'https://jbuwdk1d7uenrxyq.public.blob.vercel-storage.com/html/weekly_plan_p-aFmmHvNYKdONqssOxGV0UmFoDFI2gm.html';
+		const templateUrl = 'https://jbuwdk1d7uenrxyq.public.blob.vercel-storage.com/html/weekly_plan_p-swrVLbgWrihSqvuT8UhUuio3hyR1Sx.html';
 		const templateResponse = await fetch(templateUrl);
 		res.status(200).send(await templateResponse.text());
 	} else {
