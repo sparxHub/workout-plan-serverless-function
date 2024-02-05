@@ -109,14 +109,16 @@
 		<div class="max-w-3xl mx-auto bg-white p-0 sm:p-6">
 			<div id="form_stage" style="display: block;">
 
+				<div class="text-md text-left m-4">
+					<img
+						src="
+					https://jbuwdk1d7uenrxyq.public.blob.vercel-storage.com/html/images/workoutplan_hero_picture_app-vhrchksEJMmuYIvwpppCKCR0LMWAr9.webp"
+						alt="Workout Plan" width="800" height="600">
 
-				<img
-					src="https://jbuwdk1d7uenrxyq.public.blob.vercel-storage.com/html/images/workoutplan_hero_picture_app-vhrchksEJMmuYIvwpppCKCR0LMWAr9.webp"
-					alt="Workout Plan" width="800" height="600">
-
-				<h1 class="text-xl md:text-3xl font-bold text-left mt-4">Your AI-Powered Workout Plan
-					for <span class="text-purple-600 font-bold text-2xl md:text-3xl">Fitness</span>
-				</h1>
+					<h1 class="text-xl md:text-3xl font-bold text-left mt-4">Your AI-Powered Workout Plan
+						for <span class="text-purple-600 font-bold text-2xl md:text-3xl">Fitness</span>
+					</h1>
+				</div>
 
 
 				<p class="text-md text-left m-4">We're thrilled to introduce our brand-new, <span class="font-bold text-lg">free
@@ -274,7 +276,7 @@
 								class="form-input rounded-md p-2 w-full" rows="4"></textarea>
 						</div>
 						<!-- Submit Button with loading gauge -->
-						<button type="submit" class="w-full bg-purple-800 text-white px-4 py-2 rounded-md relative"
+						<button type="submit" class="w-full bg-purple-800 text-white px-4 py-3 rounded-md relative"
 							id="submit-button">
 							<span id="submit-button-text">Get Your Weekly Planner</span>
 						</button>
@@ -288,6 +290,20 @@
 						</div>
 
 					</form>
+
+					<div class="footer mt-14 text-center w-full bg-purple-50">
+						<p class="text-sm text-gray-600">More to read...</p>
+						<ul class="mt-2">
+							<li><a href="https://www.simplystud.io/" target="_blank" class="text-gray-500 font-bold underline">Simply
+									Studio
+									Website</a></li>
+							<li><a href="https://www.simplystud.io/post/home-vs-gym-workouts" target="_blank"
+									class="text-gray-500 font-bold underline">Home vs. Gym Workouts</a></li>
+							<li><a href="https://www.simplystud.io/post/essential-fitness-accessories-across-workout-disciplines"
+									target="_blank" class="text-gray-500 font-bold underline">Essential Fitness Accessories across Workout
+									Disciplines</a></li>
+						</ul>
+					</div>
 				</div>
 			</div>
 
@@ -602,7 +618,7 @@
 
 		// Function to fetch exercise information data
 		function fetchExerciseInfoData(callback) {
-			fetch('https://jbuwdk1d7uenrxyq.public.blob.vercel-storage.com/html/workout_excersice_full_data-9iz0PvcPDWRc5oX0YJ96lqWxrf6Xrm.json')
+			fetch('https://jbuwdk1d7uenrxyq.public.blob.vercel-storage.com/html/workout_excersice_full_data-aV9v4eJTFx9Xpzza0wlwce41BpWusR.json')
 				.then(response => response.json())
 				.then(exerciseInfoData => {
 					callback(exerciseInfoData);
