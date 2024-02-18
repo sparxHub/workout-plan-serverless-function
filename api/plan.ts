@@ -4,9 +4,12 @@ import fetch from 'node-fetch'; // Import fetch for HTTP requests
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
 	if (req.method === 'GET') {
-		const templateUrl = 'https://jbuwdk1d7uenrxyq.public.blob.vercel-storage.com/html/weekly_plan_p-iUOHM4Btrv2kT97d9HNv4XPmTedSUg.html';
-		const templateResponse = await fetch(templateUrl);
-		res.status(200).send(await templateResponse.text());
+		if (process.env.TEMPLATE_URL != null) {
+			const templateResponse = await fetch(process.env.TEMPLATE_URL);
+			res.status(200).send(await templateResponse.text());
+		} else {
+			res.status(400).json({ error: 'Config is wrong' });
+		}
 	} else {
 		res.status(405).send('Method Not Allowed');
 	}
