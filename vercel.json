@@ -4,17 +4,10 @@
 			"maxDuration": 180
 		}
 	},
-	"routes": [
+	"rewrites": [
 		{
-			"src": "/api/assistant",
-			"methods": [
-				"OPTIONS",
-				"POST"
-			],
-			"dest": "/api/assistant.js",
-			"headers": {
-				"Access-Control-Allow-Origin": "http://workoutplan.simplystud.io"
-			}
+			"source": "/",
+			"destination": "/api/plan"
 		}
 	]
 }
